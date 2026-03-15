@@ -1,0 +1,18 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IslamicLMS</title>
+    <!-- Load Vite CSS assets if any -->
+    <link rel="stylesheet" href="{% static 'dashboard/assets/index.css' %}" onerror="this.onerror=null;this.href=''">
+</head>
+<body>
+    <!-- React Root DOM Element -->
+    <div id="root"></div>
+    
+    <!-- Load Vite JS Entry Point -->
+    <script type="module" src="{% static 'dashboard/assets/index.js' %}"></script>
+</body>
+</html>

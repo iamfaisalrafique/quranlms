@@ -1,0 +1,73 @@
+:root {
+  /* IslamicLMS Primary Colors overriding Bootstrap */
+  --bs-primary: #1A6B4A;
+  --bs-primary-rgb: 26, 107, 74;
+  
+  --bs-secondary: #D4AF37;
+  --bs-secondary-rgb: 212, 175, 55;
+  
+  /* Edumin LMS Theme Variables */
+  --primary: #1A6B4A;
+  --primary-hover: #134d35;
+  --rgba-primary-1: rgba(26, 107, 74, 0.1);
+  --rgba-primary-2: rgba(26, 107, 74, 0.2);
+  --rgba-primary-3: rgba(26, 107, 74, 0.3);
+  --rgba-primary-4: rgba(26, 107, 74, 0.4);
+  --rgba-primary-5: rgba(26, 107, 74, 0.5);
+  --rgba-primary-6: rgba(26, 107, 74, 0.6);
+  --rgba-primary-7: rgba(26, 107, 74, 0.7);
+  --rgba-primary-8: rgba(26, 107, 74, 0.8);
+  --rgba-primary-9: rgba(26, 107, 74, 0.9);
+  
+  --font-family-base: 'Roboto', sans-serif;
+  --font-family-title: 'Poppins', sans-serif;
+}
+
+body {
+  font-family: var(--font-family-base);
+  background-color: #f5f5f9; /* Soft background from template */
+  color: #7e7e7e;
+}
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: var(--font-family-title);
+  color: #000;
+  font-weight: 500;
+}
+
+/* Edumin Card Overrides */
+.card {
+  margin-bottom: 1.875rem;
+  background-color: #fff;
+  transition: all .5s ease-in-out;
+  position: relative;
+  border: 0rem solid transparent;
+  border-radius: 0.75rem;
+  box-shadow: 0px 12px 23px 0px rgba(62, 73, 84, 0.04);
+}
+
+.card-header {
+  border-color: #f2f2f2;
+  position: relative;
+  background: transparent;
+  padding: 1.5rem 1.875rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+}

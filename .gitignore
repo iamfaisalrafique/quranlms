@@ -1,0 +1,63 @@
+# ── Python ──────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Django ──────────────────────────────────────────
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+local_settings.py
+
+# ── Environment ─────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Node / React ────────────────────────────────────
+node_modules/
+dashboard/node_modules/
+mobile/node_modules/
+package-lock.json
+dashboard/dist/
+dashboard/build/
+
+# ── Expo / React Native ─────────────────────────────
+mobile/.expo/
+mobile/dist/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# ── Reference folders (READ ONLY — local only) ──────
+LMS/
+Sunnah dot com offical/
+quran.com rebuild version/
+UKQuranAcademy_CurrentPHPProject/
+UKQuranAcademy_CurrentPHPProject
+
+# ── Misc junk ────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+.gifdfdfdfd
+count_tables.py
+*.docx
+
+# ── IDE ──────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
