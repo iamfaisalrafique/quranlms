@@ -11,7 +11,7 @@ const BookList = () => {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await api.get(`sunnah/collection/${slug}/books/`);
+                const response = await api.get(`sunnah/${slug}/books/`);
                 setBooks(response.data);
                 setLoading(false);
             } catch (error) {
@@ -78,11 +78,11 @@ const BookList = () => {
                                                 </td>
                                                 <td className="align-middle fs-5">
                                                     <Link to={`/sunnah/${slug}/book/${book.book_number}`} className="text-dark fw-medium text-decoration-none">
-                                                        {book.name_en || `Book ${book.book_number}`}
+                                                        {book.english_title || `Book ${book.book_number}`}
                                                     </Link>
                                                 </td>
                                                 <td className="align-middle text-end pe-4 fs-4" style={{ fontFamily: 'Amiri, serif' }}>
-                                                    {book.name_ar}
+                                                    {book.arabic_title}
                                                 </td>
                                             </tr>
                                         ))}
@@ -98,3 +98,4 @@ const BookList = () => {
 };
 
 export default BookList;
+

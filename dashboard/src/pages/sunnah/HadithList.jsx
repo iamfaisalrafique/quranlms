@@ -7,7 +7,7 @@ const HadithList = () => {
     const { slug, bookNum } = useParams();
     const [hadiths, setHadiths] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [pageUrl, setPageUrl] = useState(`sunnah/collection/${slug}/book/${bookNum}/hadiths/`);
+    const [pageUrl, setPageUrl] = useState(`sunnah/${slug}/${bookNum}/hadiths/`);
     const [nextUrl, setNextUrl] = useState(null);
     const [prevUrl, setPrevUrl] = useState(null);
     const [bookData, setBookData] = useState(null);
@@ -39,7 +39,7 @@ const HadithList = () => {
                 }
                 
                 // Set bookmarks by hadith ID
-                const bms = new Set(bookmarksRes.data.map(b => b.hadith_id));
+                const bms = new Set(bookmarksRes.data.map(b => b.hadith));
                 setBookmarks(bms);
             } catch (error) {
                 console.error("Error fetching hadiths:", error);
@@ -159,7 +159,7 @@ const HadithList = () => {
                                     </button>
                                     <button 
                                         className="btn btn-sm btn-outline-secondary"
-                                        onClick={() => copyToClipboard(`${hadith.body_en}\n\n${hadith.body_ar}`)}
+                                        onClick={() => copyToClipboard(`${hadith.english_body}\n\n${hadith.arabic_body}`)}
                                         title="Copy Hadith"
                                     >
                                         <i className="fa fa-copy"></i>
@@ -182,7 +182,7 @@ const HadithList = () => {
                                     <h3 
                                         className="text-dark lh-base" 
                                         style={{ fontFamily: 'Amiri, serif', fontSize: '1.8rem', lineHeight: '2.4' }}
-                                        dangerouslySetInnerHTML={{ __html: hadith.body_ar }}
+                                        dangerouslySetInnerHTML={{ __html: hadith.arabic_body }}
                                     />
                                 </div>
 
@@ -190,13 +190,13 @@ const HadithList = () => {
 
                                 {/* English Text */}
                                 <div>
-                                    {hadith.narrator_en && (
-                                        <p className="fw-bold text-dark fs-5 mb-2">Narrated {hadith.narrator_en}:</p>
+                                    {hadith.narrator && (
+                                        <p className="fw-bold text-dark fs-5 mb-2">Narrated {hadith.narrator}:</p>
                                     )}
                                     <p 
                                         className="text-dark fs-5" 
                                         style={{ lineHeight: '1.8' }}
-                                        dangerouslySetInnerHTML={{ __html: hadith.body_en }}
+                                        dangerouslySetInnerHTML={{ __html: hadith.english_body }}
                                     />
                                 </div>
                             </div>
@@ -207,7 +207,7 @@ const HadithList = () => {
                                         <strong>Ref:</strong> {hadith.reference || `Book ${bookNum}, Hadith ${hadith.hadith_number}`}
                                     </div>
                                     <div className="col-4 border-end">
-                                        <strong>In-book:</strong> {hadith.in_book_reference || hadith.hadith_number}
+                                        <strong>In-book:</strong> {hadith.reference || hadith.hadith_number}
                                     </div>
                                     <div className="col-4 text-capitalize">
                                         <strong>Collection:</strong> {slug.replace('-', ' ')}
@@ -247,3 +247,5 @@ const HadithList = () => {
 };
 
 export default HadithList;
+
+
