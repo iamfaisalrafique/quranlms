@@ -370,3 +370,23 @@ STOP — SUNNAH IMPORT FIXED
 - [x] Successfully re-imported all collections, books, and tens of thousands of hadiths.
 
 STOP — SUNNAH DATA FIXED
+
+## Session 14.4: Sunnah URL Fixes ✅ COMPLETE
+- [x] Fixed wrong URLs for `ahmad` and `riyadussalihin` in `import_sunnah_data.py`.
+- [x] Verified that the corrected URLs are accessible and return valid JSON data.
+- [x] Successfully re-imported all hadith collections including Ahmad and Riyad as-Salihin.
+
+STOP — SUNNAH URLS FIXED
+
+## Session 14.5: Sunnah URL Correction ✅ COMPLETE
+- [x] Corrected URLs for `ahmad` and `riyadussalihin` in `import_sunnah_data.py`.
+- [x] Verified successful data ingestion for all collections.
+
+STOP — SUNNAH URLS FIXED
+
+## Session 14.6: Sunnah Display and Permissions Fix ✅ COMPLETE
+- [x] Set all Sunnah browsing and search endpoints to `AllowAny` permissions.
+- [x] Fixed `Collections.jsx` to use correct field names from the API (`english_title`, `arabic_title`, `num_hadith`).
+- [x] Successfully rebuilt the dashboard with updated components.
+
+STOP — SUNNAH DISPLAY FIXED

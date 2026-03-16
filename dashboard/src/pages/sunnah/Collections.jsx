@@ -68,12 +68,12 @@ const Collections = () => {
                                     <div className="mb-3">
                                         <i className="la la-book fa-3x text-primary"></i>
                                     </div>
-                                    <h4 className="mb-1">{collection.title_en || collection.name}</h4>
-                                    <p className="text-muted fs-4 mb-3" style={{ fontFamily: 'Amiri, serif' }}>{collection.title_ar}</p>
+                                    <h4 className="mb-1">{collection.english_title}</h4>
+                                    <p className="text-muted fs-4 mb-3" style={{ fontFamily: 'Amiri, serif' }}>{collection.arabic_title}</p>
                                     
                                     <div className="d-flex justify-content-center align-items-center mt-3">
                                         <span className="badge badge-primary light badge-md">
-                                            {collection.total_hadith || 0} Hadiths
+                                            {collection.num_hadith || 0} Hadiths
                                         </span>
                                     </div>
                                 </div>

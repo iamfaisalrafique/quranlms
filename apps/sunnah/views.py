@@ -22,7 +22,7 @@ class SearchResultsSetPagination(pagination.PageNumberPagination):
 
 class CollectionListView(generics.ListAPIView):
     serializer_class = HadithCollectionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         status_filter = self.request.query_params.get('status', 'complete')
@@ -31,7 +31,7 @@ class CollectionListView(generics.ListAPIView):
 class CollectionDetailView(generics.RetrieveAPIView):
     queryset = HadithCollection.objects.all()
     serializer_class = HadithCollectionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     lookup_field = 'slug'
 
     def retrieve(self, request, *args, **kwargs):
@@ -43,7 +43,7 @@ class CollectionDetailView(generics.RetrieveAPIView):
 
 class BookListView(generics.ListAPIView):
     serializer_class = HadithBookSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         slug = self.kwargs['slug']
@@ -51,7 +51,7 @@ class BookListView(generics.ListAPIView):
 
 class ChapterListView(generics.ListAPIView):
     serializer_class = HadithChapterSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         slug = self.kwargs['slug']
@@ -63,7 +63,7 @@ class ChapterListView(generics.ListAPIView):
 
 class HadithListView(generics.ListAPIView):
     serializer_class = HadithSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
@@ -76,7 +76,7 @@ class HadithListView(generics.ListAPIView):
 
 class HadithDetailView(generics.RetrieveAPIView):
     serializer_class = HadithSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_object(self):
         slug = self.kwargs['slug']
