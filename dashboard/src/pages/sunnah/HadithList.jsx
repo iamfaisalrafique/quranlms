@@ -1,78 +1,66 @@
-﻿import React, { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
 
 const HadithList = () => {
     const { slug, bookNum } = useParams();
-    const navigate = useNavigate();
     const [hadiths, setHadiths] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [pageInfo, setPageInfo] = useState({ count: 0, next: null, previous: null, current: 1 });       
+    const [pageUrl, setPageUrl] = useState(`sunnah/${slug}/${bookNum}/hadiths/`);
+    const [nextUrl, setNextUrl] = useState(null);
+    const [prevUrl, setPrevUrl] = useState(null);
+    const [bookData, setBookData] = useState(null);
     const [bookmarks, setBookmarks] = useState(new Set());
-    const [books, setBooks] = useState([]);
-    const [collection, setCollection] = useState(null);
-    const [viewLanguage, setViewLanguage] = useState('both'); // 'arabic', 'english', 'both'
-    const [jumpPage, setJumpPage] = useState('');
 
     useEffect(() => {
-        const fetchInitialData = async () => {
+        const fetchHadiths = async () => {
+            setLoading(true);
             try {
-                const [colRes, booksRes] = await Promise.all([
-                    api.get(sunnah//),
-                    api.get(sunnah//books/)
+                // Determine if we are fetching by relative or absolute URL (from DRF pagination)
+                const url = pageUrl.startsWith('http') ? pageUrl : pageUrl;
+                
+                const [hadithRes, bookmarksRes] = await Promise.all([
+                    api.get(url),
+                    api.get('sunnah/bookmarks/')
                 ]);
-                setCollection(colRes.data);
-                setBooks(booksRes.data);
-            } catch (err) {
-                console.error("Failed to load collection data", err);
+
+                // DRF Paginated Response
+                if (hadithRes.data.results) {
+                    setHadiths(hadithRes.data.results);
+                    setNextUrl(hadithRes.data.next);
+                    setPrevUrl(hadithRes.data.previous);
+                } else {
+                    setHadiths(hadithRes.data);
+                }
+
+                if (hadithRes.data.results && hadithRes.data.results.length > 0) {
+                    setBookData(hadithRes.data.results[0].book);
+                }
+                
+                // Set bookmarks by hadith ID
+                const bms = new Set(bookmarksRes.data.map(b => b.hadith));
+                setBookmarks(bms);
+            } catch (error) {
+                console.error("Error fetching hadiths:", error);
+                toast.error("Failed to load hadiths");
+            } finally {
+                setLoading(false);
             }
         };
-        fetchInitialData();
-    }, [slug]);
 
-    useEffect(() => {
-        fetchHadiths(sunnah///hadiths/?page=);
-        fetchBookmarks();
-    }, [slug, bookNum, pageInfo.current]);
-
-    const fetchHadiths = async (url) => {
-        setLoading(true);
-        try {
-            const response = await api.get(url);
-            setHadiths(response.data.results || []);
-            setPageInfo(prev => ({
-                ...prev,
-                count: response.data.count,
-                next: response.data.next,
-                previous: response.data.previous
-            }));
-            window.scrollTo(0, 0);
-        } catch (error) {
-            console.error("Error fetching hadiths:", error);
-            toast.error("Failed to load hadiths");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchBookmarks = async () => {
-        try {
-            const res = await api.get('sunnah/bookmarks/');
-            const bms = new Set(res.data.map(b => b.hadith_id));
-            setBookmarks(bms);
-        } catch (error) {
-            console.warn("Bookmarks could not be loaded", error);
-        }
-    };
+        fetchHadiths();
+    }, [pageUrl]);
 
     const toggleBookmark = async (hadithId) => {
         try {
             if (bookmarks.has(hadithId)) {
+                // Find bookmark ID - unfortunately we don't have the bookmark ID mapped easily 
+                // Let's refetch bookmarks to get the specific ID to delete
                 const res = await api.get('sunnah/bookmarks/');
-                const bm = res.data.find(b => b.hadith_id === hadithId);
+                const bm = res.data.find(b => b.hadith === hadithId);
                 if (bm) {
-                    await api.delete(sunnah/bookmark//);
+                    await api.delete(`sunnah/bookmark/${bm.id}/`);
                     setBookmarks(prev => {
                         const newSet = new Set(prev);
                         newSet.delete(hadithId);
@@ -81,7 +69,7 @@ const HadithList = () => {
                     toast.success("Bookmark removed");
                 }
             } else {
-                await api.post('sunnah/bookmark/', { hadith_id: hadithId });
+                await api.post('sunnah/bookmark/', { hadith: hadithId });
                 setBookmarks(prev => new Set([...prev, hadithId]));
                 toast.success("Bookmark added");
             }
@@ -91,29 +79,20 @@ const HadithList = () => {
         }
     };
 
-    const handleJumpPage = (e) => {
-        e.preventDefault();
-        const page = parseInt(jumpPage);
-        if (page > 0 && page <= Math.ceil(pageInfo.count / 50)) {
-            setPageInfo(prev => ({ ...prev, current: page }));
-            setJumpPage('');
-        } else {
-            toast.error("Invalid page number");
-        }
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+        toast.success("Copied to clipboard!");
     };
 
     const getGradeBadgeClass = (grade) => {
-        if (!grade) return 'bg-light text-dark';
+        if (!grade) return 'badge-light text-dark';
         const lower = grade.toLowerCase();
-        if (lower.includes('sahih')) return 'bg-success text-white';
-        if (lower.includes('hasan')) return 'bg-info text-white';
-        if (lower.includes('daif') || lower.includes('da\'if') || lower.includes('weak')) return 'bg-danger text-white';
-        return 'bg-secondary text-white';
+        if (lower.includes('sahih')) return 'badge-success';
+        if (lower.includes('hasan')) return 'badge-info';
+        if (lower.includes('daif') || lower.includes('da\'if') || lower.includes('weak')) return 'badge-danger';
+        if (lower.includes('maqtu') || lower.includes('mursal')) return 'badge-warning';
+        return 'badge-secondary';
     };
-
-    const totalPages = Math.ceil(pageInfo.count / 50);
-
-    const currentBook = books.find(b => b.book_number.toString() === bookNum.toString());
 
     if (loading && hadiths.length === 0) {
         return (
@@ -126,237 +105,147 @@ const HadithList = () => {
     return (
         <div className="container-fluid">
             <div className="row page-titles mx-0">
-                <div className="col-sm-8 p-md-0">
+                <div className="col-sm-6 p-md-0">
                     <div className="welcome-text">
-                        <h4 className="mb-1">{currentBook?.english_title} - {currentBook?.arabic_title}</h4>
-                        <nav aria-label="breadcrumb">
-                            <ol className="breadcrumb">
-                                <li className="breadcrumb-item"><Link to="/sunnah">Sunnah</Link></li>     
-                                <li className="breadcrumb-item"><Link to={/sunnah/} className="text-capitalize">{slug}</Link></li>
-                                <li className="breadcrumb-item active">Book {bookNum}</li>
-                            </ol>
-                        </nav>
+                        <h4>{bookData ? bookData.name_en : `Book ${bookNum}`}</h4>
+                        <p className="mb-0 text-capitalize">{slug}</p>
                     </div>
                 </div>
-                <div className="col-sm-4 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex align-items-center">
-                    <select
-                        className="form-select w-auto"
-                        value={viewLanguage}
-                        onChange={(e) => setViewLanguage(e.target.value)}
-                    >
-                        <option value="both">Both Languages</option>
-                        <option value="arabic">Arabic Only</option>
-                        <option value="english">English Only</option>
-                    </select>
+                <div className="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+                    <ol className="breadcrumb">
+                        <li className="breadcrumb-item"><Link to="/dashboard">Dashboard</Link></li>
+                        <li className="breadcrumb-item"><Link to="/sunnah">Sunnah</Link></li>
+                        <li className="breadcrumb-item"><Link to={`/sunnah/${slug}`} className="text-capitalize">{slug}</Link></li>
+                        <li className="breadcrumb-item active">Book {bookNum}</li>
+                    </ol>
                 </div>
             </div>
 
-            <div className="row">
-                {/* Left Sidebar - Book List */}
-                <div className="col-xl-3 d-none d-xl-block">
-                    <div className="card shadow-sm border-0 sticky-top" style={{ top: '100px', borderRadius: '1rem', maxHeight: 'calc(100vh - 120px)', overflowY: 'auto' }}>
-                        <div className="card-header bg-white border-bottom py-3">
-                            <h5 className="mb-0 fw-bold">Books in this Collection</h5>
-                        </div>
-                        <div className="list-group list-group-flush">
-                            {books.map(book => (
-                                <button
-                                    key={book.book_number}
-                                    onClick={() => navigate(/sunnah//book/)}  
-                                    className={list-group-item list-group-item-action border-0 py-3 px-4 d-flex align-items-start \}     
-                                >
-                                    <span className="badge rounded-pill me-3" style={{ backgroundColor: book.book_number.toString() === bookNum.toString() ? '#fff' : '#f0f0f0', color: book.book_number.toString() === bookNum.toString() ? '#1A6B4A' : '#666' }}>
-                                        {book.book_number}
-                                    </span>
-                                    <div className="flex-grow-1">
-                                        <div className="fw-bold small mb-1">{book.english_title}</div>    
-                                        <div className="text-end text-muted small" style={{ fontFamily: 'Amiri, serif' }}>{book.arabic_title}</div>
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Main Content - Hadith Cards */}
+            <div className="row justify-content-center">
                 <div className="col-xl-9 col-lg-12">
+                    {/* Pagination Controls Top */}
+                    <div className="d-flex justify-content-between mb-4">
+                        <button 
+                            className="btn btn-primary" 
+                            disabled={!prevUrl} 
+                            onClick={() => setPageUrl(prevUrl)}
+                        >
+                            <i className="fa fa-arrow-left me-2"></i> Previous
+                        </button>
+                        <button 
+                            className="btn btn-primary" 
+                            disabled={!nextUrl} 
+                            onClick={() => setPageUrl(nextUrl)}
+                        >
+                            Next <i className="fa fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+
                     {hadiths.map((hadith) => (
-                        <div className="card mb-5 hadith-card shadow-sm border-0" key={hadith.id} style={{ borderRadius: '1rem' }}>
-                            <div className="card-header bg-white border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
-                                <div className="d-flex align-items-center gap-3">
-                                    <div className="hadith-number-badge">{hadith.hadith_number}</div>     
-                                    {hadith.grade && (
-                                        <span className={adge rounded-pill px-3 py-2 \}>
-                                            {hadith.grade}
-                                        </span>
-                                    )}
-                                </div>
+                        <div className="card mb-4 shadow-sm" key={hadith.id}>
+                            <div className="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                                <h5 className="mb-0 text-primary fw-bold">
+                                    <i className="la la-book me-2"></i>
+                                    Hadith {hadith.hadith_number}
+                                </h5>
+                                
                                 <div className="d-flex gap-2">
-                                    <button
-                                        className={tn btn-icon btn-sm \}
+                                    <button 
+                                        className={`btn btn-sm ${bookmarks.has(hadith.id) ? 'btn-primary' : 'btn-outline-primary'}`}
                                         onClick={() => toggleBookmark(hadith.id)}
                                         title="Bookmark"
                                     >
-                                        <i className={a\ fa-star fs-4}></i>
+                                        <i className="fa fa-bookmark"></i>
                                     </button>
-
-                                    <button className="btn btn-icon btn-sm text-muted" onClick={() => {   
-                                        navigator.clipboard.writeText(\\n\n\);
-                                        toast.success("Copied to clipboard");
-                                    }}>
-                                        <i className="fa fa-copy fs-4"></i>
+                                    <button 
+                                        className="btn btn-sm btn-outline-secondary"
+                                        onClick={() => copyToClipboard(`${hadith.english_body}\n\n${hadith.arabic_body}`)}
+                                        title="Copy Hadith"
+                                    >
+                                        <i className="fa fa-copy"></i>
                                     </button>
                                 </div>
                             </div>
-
-                            <div className="card-body px-4 py-4">
-                                {(viewLanguage === 'arabic' || viewLanguage === 'both') && (
-                                    <div className="hadith-arabic mb-4 text-end" style={{ direction: 'rtl', borderRight: '4px solid #D4AF37', paddingRight: '20px' }}>
-                                        <h3
-                                            className="lh-base"
-                                            style={{ fontFamily: 'Amiri, serif', fontSize: '1.6rem', lineHeight: '2.4', color: '#2c3e50' }}
-                                            dangerouslySetInnerHTML={{ __html: hadith.arabic_body }}      
-                                        />
+                            
+                            <div className="card-body">
+                                {/* Grade Badge */}
+                                {hadith.grade && (
+                                    <div className="mb-4 text-center">
+                                        <span className={`badge ${getGradeBadgeClass(hadith.grade)} fs-6 py-2 px-3`}>
+                                            <strong>Grade:</strong> {hadith.grade}
+                                        </span>
                                     </div>
                                 )}
 
-                                {viewLanguage === 'both' && <hr className="my-4 opacity-25" />}
-
-                                {(viewLanguage === 'english' || viewLanguage === 'both') && (
-                                    <div className="hadith-english ps-2">
-                                        {hadith.narrator && (
-                                            <p className="fst-italic fw-bold text-dark mb-2" style={{ fontSize: '1.1rem' }}>
-                                                Narrated {hadith.narrator}:
-                                            </p>
-                                        )}
-                                        <p className="text-dark" style={{ fontSize: '1.05rem', lineHeight: '1.8' }}>
-                                            {hadith.english_body}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="card-footer bg-light border-0 py-3 px-4 d-flex flex-wrap justify-content-between align-items-center" style={{ borderBottomLeftRadius: '1rem', borderBottomRightRadius: '1rem' }}>
-                                <div className="small text-muted d-flex gap-4">
-                                    <span><strong>Reference:</strong> {hadith.reference}</span>
-                                    <span><strong>Hadith:</strong> {hadith.hadith_number}</span>
+                                {/* Arabic Text (Right Aligned, Amish Font) */}
+                                <div className="mb-5 text-end" style={{ direction: 'rtl' }}>
+                                    <h3 
+                                        className="text-dark lh-base" 
+                                        style={{ fontFamily: 'Amiri, serif', fontSize: '1.8rem', lineHeight: '2.4' }}
+                                        dangerouslySetInnerHTML={{ __html: hadith.arabic_body }}
+                                    />
                                 </div>
-                                <div className="d-flex gap-3 mt-2 mt-sm-0">
-                                    <button className="btn btn-sm btn-link text-muted p-0 text-decoration-none small">
-                                        <i className="fa fa-share-alt me-1"></i> Share
-                                    </button>
-                                    <button className="btn btn-sm btn-link text-muted p-0 text-decoration-none small">
-                                        <i className="fa fa-exclamation-triangle me-1"></i> Report        
-                                    </button>
+
+                                <hr className="my-4" />
+
+                                {/* English Text */}
+                                <div>
+                                    {hadith.narrator && (
+                                        <p className="fw-bold text-dark fs-5 mb-2">Narrated {hadith.narrator}:</p>
+                                    )}
+                                    <p 
+                                        className="text-dark fs-5" 
+                                        style={{ lineHeight: '1.8' }}
+                                        dangerouslySetInnerHTML={{ __html: hadith.english_body }}
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="card-footer bg-light py-2 text-muted fs-6">
+                                <div className="row text-center mb-0">
+                                    <div className="col-4 border-end">
+                                        <strong>Ref:</strong> {hadith.reference || `Book ${bookNum}, Hadith ${hadith.hadith_number}`}
+                                    </div>
+                                    <div className="col-4 border-end">
+                                        <strong>In-book:</strong> {hadith.reference || hadith.hadith_number}
+                                    </div>
+                                    <div className="col-4 text-capitalize">
+                                        <strong>Collection:</strong> {slug.replace('-', ' ')}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     ))}
 
-                    {/* Full Pagination Footer */}
-                    <div className="card shadow-sm border-0 p-4 mb-5" style={{ borderRadius: '1rem' }}>   
-                        <div className="row align-items-center">
-                            <div className="col-md-4 mb-3 mb-md-0">
-                                <span className="text-muted">Page <strong>{pageInfo.current}</strong> of <strong>{totalPages}</strong></span>
-                            </div>
-                            <div className="col-md-4 mb-3 mb-md-0">
-                                <form onSubmit={handleJumpPage} className="d-flex justify-content-center">
-                                    <div className="input-group input-group-sm w-75">
-                                        <input
-                                            type="number"
-                                            className="form-control"
-                                            placeholder="Jump to page..."
-                                            value={jumpPage}
-                                            onChange={(e) => setJumpPage(e.target.value)}
-                                        />
-                                        <button className="btn btn-outline-secondary" type="submit">Go</button>
-                                    </div>
-                                </form>
-                            </div>
-                            <div className="col-md-4 d-flex justify-content-md-end justify-content-center">
-                                <nav>
-                                    <ul className="pagination pagination-primary pagination-gutter mb-0"> 
-                                        <li className={page-item \}>
-                                            <button className="page-link" onClick={() => setPageInfo(p => ({...p, current: p.current - 1}))}>
-                                                <i className="la la-angle-left"></i>
-                                            </button>
-                                        </li>
-
-                                        {/* Simple page numbers logic */}
-                                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {      
-                                            let pNum;
-                                            if (totalPages <= 5) pNum = i + 1;
-                                            else if (pageInfo.current <= 3) pNum = i + 1;
-                                            else if (pageInfo.current >= totalPages - 2) pNum = totalPages - 4 + i;
-                                            else pNum = pageInfo.current - 2 + i;
-
-                                            return (
-                                                <li key={pNum} className={page-item \}>
-                                                    <button className="page-link" onClick={() => setPageInfo(p => ({...p, current: pNum}))}>{pNum}</button>
-                                                </li>
-                                            );
-                                        })}
-
-                                        <li className={page-item \}>  
-                                            <button className="page-link" onClick={() => setPageInfo(p => ({...p, current: p.current + 1}))}>
-                                                <i className="la la-angle-right"></i>
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            </div>
-                        </div>
+                    {/* Pagination Controls Bottom */}
+                    <div className="d-flex justify-content-between mt-4 mb-5">
+                        <button 
+                            className="btn btn-primary" 
+                            disabled={!prevUrl} 
+                            onClick={() => setPageUrl(prevUrl)}
+                        >
+                            <i className="fa fa-arrow-left me-2"></i> Previous
+                        </button>
+                        <button 
+                            className="btn btn-primary" 
+                            disabled={!nextUrl} 
+                            onClick={() => setPageUrl(nextUrl)}
+                        >
+                            Next <i className="fa fa-arrow-right ms-2"></i>
+                        </button>
                     </div>
 
                     {hadiths.length === 0 && !loading && (
-                        <div className="alert alert-warning text-center rounded-3 p-5">
-                            <i className="la la-frown-o fa-3x mb-3 d-block"></i>
-                            <h4>No hadiths found for this book.</h4>
-                            <p>Try selecting a different book or checking another collection.</p>
-                            <Link to={/sunnah/\} className="btn btn-primary mt-3">Back to Book List</Link>
+                        <div className="alert alert-warning text-center">
+                            No hadiths found for this book.
                         </div>
                     )}
                 </div>
             </div>
-
-            <style dangerouslySetInnerHTML={{ __html: 
-                .active-book {
-                    background-color: rgba(26, 107, 74, 0.1)!important;
-                    border-left: 4px solid #1A6B4A!important;
-                    color: #1A6B4A!important;
-                }
-                .active-book .badge {
-                    background-color: #1A6B4A!important;
-                    color: white!important;
-                }
-                .hadith-number-badge {
-                    background-color: #1A6B4A;
-                    color: white;
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: bold;
-                    font-size: 0.9rem;
-                }
-                .hadith-card {
-                    transition: transform 0.2s;
-                }
-                .hadith-card:hover {
-                    transform: translateY(-3px);
-                }
-                .pagination-primary .page-item.active .page-link {
-                    background-color: #1A6B4A!important;
-                    border-color: #1A6B4A!important;
-                }
-                .btn-icon:hover {
-                    background-color: #f8f9fa;
-                }
-            }} />
         </div>
     );
 };
 
 export default HadithList;
+
+
