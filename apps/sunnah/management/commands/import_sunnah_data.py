@@ -27,9 +27,9 @@ class Command(BaseCommand):
         "nasai": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/the_9_books/nasai.json",
         "ibnmajah": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/the_9_books/ibnmajah.json",
         "malik": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/the_9_books/malik.json",
-        "ahmad": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/the_9_books/ahmad.json",
+        "ahmad": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/the_9_books/ahmed.json",
         "darimi": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/the_9_books/darimi.json",
-        "riyadussalihin": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/other_books/RyadSalihin.json",
+        "riyadussalihin": "https://raw.githubusercontent.com/AhmedBaset/hadith-json/refs/heads/main/db/by_book/other_books/riyad_assalihin.json",
         "nawawi40": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/forties/nawawi40.json",
     }
 
