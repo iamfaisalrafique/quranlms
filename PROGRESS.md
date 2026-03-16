@@ -390,3 +390,11 @@ STOP — SUNNAH URLS FIXED
 - [x] Successfully rebuilt the dashboard with updated components.
 
 STOP — SUNNAH DISPLAY FIXED
+
+## Session 14.7: Hadith List Display Fix ✅ COMPLETE
+- [x] Fixed `HadithList.jsx` to correctly fetch and display hadiths from the API.
+- [x] Corrected API URL mapping and field names (`arabic_body`, `english_body`, `narrator`).
+- [x] Decoupled bookmark loading to prevent authentication failures from blocking the main content.
+- [x] Rebuilt dashboard and verified functionality.
+
+STOP — HADITH LIST FIXED

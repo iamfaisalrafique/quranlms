@@ -7,40 +7,25 @@ const HadithList = () => {
     const { slug, bookNum } = useParams();
     const [hadiths, setHadiths] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [pageUrl, setPageUrl] = useState(`sunnah/collection/${slug}/book/${bookNum}/hadiths/`);
+    const [pageUrl, setPageUrl] = useState(`sunnah/${slug}/${bookNum}/hadiths/`);
     const [nextUrl, setNextUrl] = useState(null);
     const [prevUrl, setPrevUrl] = useState(null);
-    const [bookData, setBookData] = useState(null);
     const [bookmarks, setBookmarks] = useState(new Set());
 
     useEffect(() => {
         const fetchHadiths = async () => {
             setLoading(true);
             try {
-                // Determine if we are fetching by relative or absolute URL (from DRF pagination)
                 const url = pageUrl.startsWith('http') ? pageUrl : pageUrl;
-                
-                const [hadithRes, bookmarksRes] = await Promise.all([
-                    api.get(url),
-                    api.get('sunnah/bookmarks/')
-                ]);
+                const response = await api.get(url);
 
-                // DRF Paginated Response
-                if (hadithRes.data.results) {
-                    setHadiths(hadithRes.data.results);
-                    setNextUrl(hadithRes.data.next);
-                    setPrevUrl(hadithRes.data.previous);
+                if (response.data.results) {
+                    setHadiths(response.data.results);
+                    setNextUrl(response.data.next);
+                    setPrevUrl(response.data.previous);
                 } else {
-                    setHadiths(hadithRes.data);
+                    setHadiths(response.data);
                 }
-
-                if (hadithRes.data.results && hadithRes.data.results.length > 0) {
-                    setBookData(hadithRes.data.results[0].book);
-                }
-                
-                // Set bookmarks by hadith ID
-                const bms = new Set(bookmarksRes.data.map(b => b.hadith_id));
-                setBookmarks(bms);
             } catch (error) {
                 console.error("Error fetching hadiths:", error);
                 toast.error("Failed to load hadiths");
@@ -49,16 +34,25 @@ const HadithList = () => {
             }
         };
 
+        const fetchBookmarks = async () => {
+            try {
+                const res = await api.get('sunnah/bookmarks/');
+                const bms = new Set(res.data.map(b => b.hadith_id));
+                setBookmarks(bms);
+            } catch (error) {
+                console.warn("Bookmarks could not be loaded", error);
+            }
+        };
+
         fetchHadiths();
+        fetchBookmarks();
     }, [pageUrl]);
 
     const toggleBookmark = async (hadithId) => {
         try {
             if (bookmarks.has(hadithId)) {
-                // Find bookmark ID - unfortunately we don't have the bookmark ID mapped easily 
-                // Let's refetch bookmarks to get the specific ID to delete
                 const res = await api.get('sunnah/bookmarks/');
-                const bm = res.data.find(b => b.hadith === hadithId);
+                const bm = res.data.find(b => b.hadith_id === hadithId);
                 if (bm) {
                     await api.delete(`sunnah/bookmark/${bm.id}/`);
                     setBookmarks(prev => {
@@ -69,7 +63,7 @@ const HadithList = () => {
                     toast.success("Bookmark removed");
                 }
             } else {
-                await api.post('sunnah/bookmark/', { hadith: hadithId });
+                await api.post('sunnah/bookmark/', { hadith_id: hadithId });
                 setBookmarks(prev => new Set([...prev, hadithId]));
                 toast.success("Bookmark added");
             }
@@ -107,8 +101,8 @@ const HadithList = () => {
             <div className="row page-titles mx-0">
                 <div className="col-sm-6 p-md-0">
                     <div className="welcome-text">
-                        <h4>{bookData ? bookData.name_en : `Book ${bookNum}`}</h4>
-                        <p className="mb-0 text-capitalize">{slug}</p>
+                        <h4>Book {bookNum}</h4>
+                        <p className="mb-0 text-capitalize">{slug.replace('-', ' ')}</p>
                     </div>
                 </div>
                 <div className="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
@@ -123,7 +117,6 @@ const HadithList = () => {
 
             <div className="row justify-content-center">
                 <div className="col-xl-9 col-lg-12">
-                    {/* Pagination Controls Top */}
                     <div className="d-flex justify-content-between mb-4">
                         <button 
                             className="btn btn-primary" 
@@ -159,7 +152,7 @@ const HadithList = () => {
                                     </button>
                                     <button 
                                         className="btn btn-sm btn-outline-secondary"
-                                        onClick={() => copyToClipboard(`${hadith.body_en}\n\n${hadith.body_ar}`)}
+                                        onClick={() => copyToClipboard(`${hadith.english_body}\n\n${hadith.arabic_body}`)}
                                         title="Copy Hadith"
                                     >
                                         <i className="fa fa-copy"></i>
@@ -168,7 +161,6 @@ const HadithList = () => {
                             </div>
                             
                             <div className="card-body">
-                                {/* Grade Badge */}
                                 {hadith.grade && (
                                     <div className="mb-4 text-center">
                                         <span className={`badge ${getGradeBadgeClass(hadith.grade)} fs-6 py-2 px-3`}>
@@ -177,26 +169,24 @@ const HadithList = () => {
                                     </div>
                                 )}
 
-                                {/* Arabic Text (Right Aligned, Amish Font) */}
                                 <div className="mb-5 text-end" style={{ direction: 'rtl' }}>
                                     <h3 
                                         className="text-dark lh-base" 
                                         style={{ fontFamily: 'Amiri, serif', fontSize: '1.8rem', lineHeight: '2.4' }}
-                                        dangerouslySetInnerHTML={{ __html: hadith.body_ar }}
+                                        dangerouslySetInnerHTML={{ __html: hadith.arabic_body }}
                                     />
                                 </div>
 
                                 <hr className="my-4" />
 
-                                {/* English Text */}
                                 <div>
-                                    {hadith.narrator_en && (
-                                        <p className="fw-bold text-dark fs-5 mb-2">Narrated {hadith.narrator_en}:</p>
+                                    {hadith.narrator && (
+                                        <p className="fw-bold text-dark fs-5 mb-2">Narrated {hadith.narrator}:</p>
                                     )}
                                     <p 
                                         className="text-dark fs-5" 
                                         style={{ lineHeight: '1.8' }}
-                                        dangerouslySetInnerHTML={{ __html: hadith.body_en }}
+                                        dangerouslySetInnerHTML={{ __html: hadith.english_body }}
                                     />
                                 </div>
                             </div>
@@ -207,7 +197,7 @@ const HadithList = () => {
                                         <strong>Ref:</strong> {hadith.reference || `Book ${bookNum}, Hadith ${hadith.hadith_number}`}
                                     </div>
                                     <div className="col-4 border-end">
-                                        <strong>In-book:</strong> {hadith.in_book_reference || hadith.hadith_number}
+                                        <strong>Hadith:</strong> {hadith.hadith_number}
                                     </div>
                                     <div className="col-4 text-capitalize">
                                         <strong>Collection:</strong> {slug.replace('-', ' ')}
@@ -217,7 +207,6 @@ const HadithList = () => {
                         </div>
                     ))}
 
-                    {/* Pagination Controls Bottom */}
                     <div className="d-flex justify-content-between mt-4 mb-5">
                         <button 
                             className="btn btn-primary" 
