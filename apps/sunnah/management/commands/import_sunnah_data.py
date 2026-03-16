@@ -25,9 +25,9 @@ class Command(BaseCommand):
         "nasai": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/the_9_books/nasai.json",
         "ibnmajah": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/the_9_books/ibnmajah.json",
         "malik": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/the_9_books/malik.json",
-        # "ahmad": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/the_9_books/ahmad.json", # 404
+        "ahmad": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/the_9_books/ahmad.json",
         "darimi": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/the_9_books/darimi.json",
-        # "riyadussalihin": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/other_books/RyadSalihin.json", # 404
+        "riyadussalihin": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/other_books/RyadSalihin.json",
         "nawawi40": "https://raw.githubusercontent.com/A7med3bdulBaset/hadith-json/v1.2.0/db/by_book/forties/nawawi40.json",
     }
 
@@ -75,7 +75,10 @@ class Command(BaseCommand):
                 rows = re.findall(r"\((.*?)\),", match + ",", re.DOTALL)
                 for row in rows:
                     vals = self.parse_sql_row(row)
-                    if len(vals) >= 20:
+                    # Corrected Mapping based on 02-collections.sql:
+                    # (`name`, `collectionID`, `type`, `englishTitle`, `arabicTitle`, ..., `numhadith`, ..., `shortintro`, `about`, `status`, ...)
+                    # Indices: 0:slug, 1:collection_id, 3:english_title, 4:arabic_title, 8:num_hadith, 18:short_intro, 20:status
+                    if len(vals) >= 21:
                         slug = vals[0]
                         HadithCollection.objects.update_or_create(
                             slug=slug,
@@ -154,6 +157,9 @@ class Command(BaseCommand):
                     )
 
                 response = requests.get(url)
+                if response.status_code == 404:
+                    self.stdout.write(self.style.WARNING(f"404 Not Found for {slug}: {url}"))
+                    continue
                 response.raise_for_status()
 
                 try:
@@ -164,13 +170,11 @@ class Command(BaseCommand):
                         text = text[1:]
                     data = json.loads(text)
 
-                # Check if it's the wrapped format or flat list
                 hadiths_data = []
                 chapters_map = {}
 
                 if isinstance(data, dict) and "hadiths" in data:
                     hadiths_data = data["hadiths"]
-                    # Optionally handle chapters if present
                     if "chapters" in data:
                         for ch in data["chapters"]:
                             chapters_map[ch["id"]] = ch
@@ -181,7 +185,7 @@ class Command(BaseCommand):
                     continue
 
                 total = len(hadiths_data)
-                
+
                 for i, item in enumerate(hadiths_data):
                     if not isinstance(item, dict):
                         continue
@@ -221,7 +225,7 @@ class Command(BaseCommand):
                             }
                         )
 
-                    if (i + 1) % 100 == 0:
+                    if (i + 1) % 500 == 0:
                         self.stdout.write(f"  {slug}: {i+1}/{total} hadiths")
 
                 progress[slug] = "complete"
