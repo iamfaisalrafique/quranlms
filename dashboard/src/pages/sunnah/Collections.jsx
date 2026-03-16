@@ -71,6 +71,10 @@ const Collections = () => {
                                     <h4 className="mb-1">{collection.english_title}</h4>
                                     <p className="text-muted fs-4 mb-3" style={{ fontFamily: 'Amiri, serif' }}>{collection.arabic_title}</p>
                                     
+                                    <p className="small text-muted mb-3 line-clamp-2">
+                                        {collection.short_intro}
+                                    </p>
+
                                     <div className="d-flex justify-content-center align-items-center mt-3">
                                         <span className="badge badge-primary light badge-md">
                                             {collection.num_hadith || 0} Hadiths
