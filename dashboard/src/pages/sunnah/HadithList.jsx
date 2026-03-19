@@ -212,14 +212,6 @@ const HadithList = () => {
                                         toast.success("Copied to clipboard");
                                     }}>
                                         <i className="fa fa-copy fs-4"></i>
-=======
-                                    <button 
-                                        className="btn btn-sm btn-outline-secondary"
-                                        onClick={() => copyToClipboard(`${hadith.english_body}\n\n${hadith.arabic_body}`)}
-                                        title="Copy Hadith"
-                                    >
-                                        <i className="fa fa-copy"></i>
->>>>>>> origin/main
                                     </button>
                                 </div>
                             </div>
@@ -235,7 +227,6 @@ const HadithList = () => {
                                     </div>
                                 )}
 
-<<<<<<< HEAD
                                 {viewLanguage === 'both' && <hr className="my-4 opacity-25" />}
 
                                 {(viewLanguage === 'english' || viewLanguage === 'both') && (
@@ -264,43 +255,6 @@ const HadithList = () => {
                                     <button className="btn btn-sm btn-link text-muted p-0 text-decoration-none small">
                                         <i className="fa fa-exclamation-triangle me-1"></i> Report
                                     </button>
-=======
-                                {/* Arabic Text (Right Aligned, Amish Font) */}
-                                <div className="mb-5 text-end" style={{ direction: 'rtl' }}>
-                                    <h3 
-                                        className="text-dark lh-base" 
-                                        style={{ fontFamily: 'Amiri, serif', fontSize: '1.8rem', lineHeight: '2.4' }}
-                                        dangerouslySetInnerHTML={{ __html: hadith.arabic_body }}
-                                    />
-                                </div>
-
-                                <hr className="my-4" />
-
-                                {/* English Text */}
-                                <div>
-                                    {hadith.narrator && (
-                                        <p className="fw-bold text-dark fs-5 mb-2">Narrated {hadith.narrator}:</p>
-                                    )}
-                                    <p 
-                                        className="text-dark fs-5" 
-                                        style={{ lineHeight: '1.8' }}
-                                        dangerouslySetInnerHTML={{ __html: hadith.english_body }}
-                                    />
-                                </div>
-                            </div>
-                            
-                            <div className="card-footer bg-light py-2 text-muted fs-6">
-                                <div className="row text-center mb-0">
-                                    <div className="col-4 border-end">
-                                        <strong>Ref:</strong> {hadith.reference || `Book ${bookNum}, Hadith ${hadith.hadith_number}`}
-                                    </div>
-                                    <div className="col-4 border-end">
-                                        <strong>In-book:</strong> {hadith.reference || hadith.hadith_number}
-                                    </div>
-                                    <div className="col-4 text-capitalize">
-                                        <strong>Collection:</strong> {slug.replace('-', ' ')}
-                                    </div>
->>>>>>> origin/main
                                 </div>
                             </div>
                         </div>
