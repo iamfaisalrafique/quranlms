@@ -8,14 +8,14 @@ const HadithList = () => {
     const navigate = useNavigate();
     const [hadiths, setHadiths] = useState([]);
     const [loading, setLoading] = useState(true);
-<<<<<<< HEAD
     const [pageInfo, setPageInfo] = useState({ count: 0, next: null, previous: null, current: 1 });
-=======
-    const [pageUrl, setPageUrl] = useState(`sunnah/${slug}/${bookNum}/hadiths/`);
-    const [nextUrl, setNextUrl] = useState(null);
-    const [prevUrl, setPrevUrl] = useState(null);
-    const [bookData, setBookData] = useState(null);
->>>>>>> origin/main
+
+
+
+
+
+
+
     const [bookmarks, setBookmarks] = useState(new Set());
     const [books, setBooks] = useState([]);
     const [collection, setCollection] = useState(null);
@@ -206,7 +206,7 @@ const HadithList = () => {
                                     >
                                         <i className={`fa${bookmarks.has(hadith.id) ? 's' : 'r'} fa-star fs-4`}></i>
                                     </button>
-<<<<<<< HEAD
+
                                     <button className="btn btn-icon btn-sm text-muted" onClick={() => {
                                         navigator.clipboard.writeText(`${hadith.english_body}\n\n${hadith.arabic_body}`);
                                         toast.success("Copied to clipboard");
