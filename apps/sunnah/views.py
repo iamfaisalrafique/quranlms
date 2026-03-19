@@ -99,11 +99,23 @@ class SunnahSearchView(generics.ListAPIView):
         if not query:
             return Hadith.objects.none()
 
-        return Hadith.objects.filter(
+        queryset = Hadith.objects.filter(
             Q(english_body__icontains=query) |
             Q(arabic_body__icontains=query) |
             Q(narrator__icontains=query)
         ).select_related('collection', 'book')
+
+        collections_param = self.request.query_params.get('collections')
+        if collections_param:
+            # Expect a comma-separated list of collection slugs, e.g. ?collections=bukhari,muslim
+            collection_slugs = [
+                slug.strip() for slug in collections_param.split(',')
+                if slug.strip()
+            ]
+            if collection_slugs:
+                queryset = queryset.filter(collection__slug__in=collection_slugs)
+
+        return queryset
 
 class HadithBookmarkView(APIView):
     permission_classes = [IsAuthenticated]
