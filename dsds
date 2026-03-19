@@ -1,0 +1,6 @@
+# Ignore the heavy junk to keep the push fast
+**/node_modules/
+**/__pycache__/
+**/.venv/
+**/.env
+*.pyc

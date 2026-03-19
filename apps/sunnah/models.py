@@ -1,4 +1,5 @@
-from django.db import models
+﻿from django.db import models
+from django.core.exceptions import ValidationError
 
 class HadithCollection(models.Model):
     """
@@ -52,15 +53,38 @@ class HadithChapter(models.Model):
     english_title = models.CharField(max_length=500)
     arabic_title = models.CharField(max_length=500)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['book', 'chapter_number'],
+                name='unique_chapter_per_book',
+            ),
+            models.CheckConstraint(
+                check=models.Q(collection=models.F('book__collection')),
+                name='chapter_collection_matches_book',
+            ),
+        ]
+
+    def clean(self):
+        """
+        Ensure that the chapter's collection matches the collection of its book.
+        """
+        # Only validate when both relations are set.
+        if self.book_id is not None and self.collection_id is not None:
+            if self.collection_id != self.book.collection_id:
+                raise ValidationError(
+                    {'collection': 'Chapter collection must match the collection of its book.'}
+                )
+
     def __str__(self):
-        return f"{self.collection.slug} - Book {self.book.book_number} - Chapter {self.chapter_number}"
+        return f"{self.collection.slug} - Book {self.book.book_number} - Chapter {self.chapter_number}"   
 
 
 class Hadith(models.Model):
     """
     Represents an individual Hadith.
     """
-    collection = models.ForeignKey(HadithCollection, on_delete=models.CASCADE, related_name='hadiths')
+    collection = models.ForeignKey(HadithCollection, on_delete=models.CASCADE, related_name='hadiths')    
     book = models.ForeignKey(HadithBook, on_delete=models.CASCADE, related_name='hadiths')
     chapter = models.ForeignKey(HadithChapter, on_delete=models.CASCADE, related_name='hadiths', null=True, blank=True)
     hadith_number = models.CharField(max_length=20, db_index=True)
