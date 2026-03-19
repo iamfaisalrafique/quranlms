@@ -48,7 +48,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("✓ ALL COLLECTIONS COMPLETE"))
 
     def fetch_sql_content(self, url):
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         response.raise_for_status()
         return response.text
 
