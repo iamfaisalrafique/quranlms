@@ -6,7 +6,7 @@ urlpatterns = [
     path('search/', views.SunnahSearchView.as_view(), name='sunnah-search'),
     path('bookmarks/', views.HadithBookmarkView.as_view(), name='hadith-bookmark-list'),
     path('bookmark/', views.HadithBookmarkView.as_view(), name='hadith-bookmark-create'),
-
+    path('bookmark/<int:pk>/', views.HadithBookmarkDeleteView.as_view(), name='hadith-bookmark-delete'),
     path('<slug:slug>/', views.CollectionDetailView.as_view(), name='collection-detail'),
     path('<slug:slug>/books/', views.BookListView.as_view(), name='book-list'),
     path('<slug:slug>/books/<str:book_number>/chapters/', views.ChapterListView.as_view(), name='chapter-list'),
