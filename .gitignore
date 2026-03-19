@@ -56,6 +56,9 @@ Thumbs.db
 count_tables.py
 *.docx
 
+# ── Runtime / local-only files ───────────────────────
+import_progress.json
+
 # ── IDE ──────────────────────────────────────────────
 .vscode/
 .idea/
